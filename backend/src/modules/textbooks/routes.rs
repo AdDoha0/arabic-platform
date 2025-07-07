@@ -11,5 +11,6 @@ pub fn routes() -> Router<AppState> {
         .route("/textbooks/{id}",
             get(get_textbook_handler)
             .delete(delete_textbook_handler)
+            .patch(update_textbook_handler)
         )
 }

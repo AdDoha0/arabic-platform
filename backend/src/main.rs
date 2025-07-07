@@ -5,9 +5,9 @@ use app::app_router;
 use db::AppState;
 
 mod modules;
-mod error;
 mod app;
 mod db;
+mod common;
 
 #[tokio::main]
 async fn main() {

@@ -3,7 +3,7 @@ use std::{ops::ControlFlow, os::linux::raw::stat};
 use axum::{extract::{State, Path}, response::IntoResponse, Json};
 use crate::{
     AppState,
-    error::AppError,
+    common::error::AppError,
     modules::textbooks::{
         dto::input::{CreateTextbookDto, UpdateTextbookDto},
         service::{
@@ -15,6 +15,12 @@ use crate::{
         },
     },
 };
+
+// НАДО ДОБАВИТЬ:
+// limit / page или offset / limit;
+// фильтрация по полям (level, is_active);
+// сортировка (sort_by=title, order=desc).
+// envelope 
 
 
 pub async fn create_textbook_handler(

@@ -3,7 +3,8 @@ use sqlx::PgPool;
 use crate::modules::textbooks::entity::{Textbook, NewTextbook};
 use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto};
 use crate::modules::textbooks::dto::output::TextbookResponseDto;
-use crate::error::AppError;
+use crate::common::error::AppError;
+
 
 
 pub async fn insert_textbook(
