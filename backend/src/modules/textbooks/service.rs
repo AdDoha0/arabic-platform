@@ -49,6 +49,16 @@ pub async fn list_textbooks(
 }
 
 
+pub async fn patch_textbook(
+    db: &PgPool,
+    id: i32,
+    dto: UpdateTextbookDto,
+) -> Result<TextbookResponseDto, AppError> {
+    let updated = repository::update_textbook_by_id(db, id, dto).await?;
+    Ok(updated.into())
+}
+
+
 pub async fn delete_textbook(
     db: &PgPool,
     id: i32,

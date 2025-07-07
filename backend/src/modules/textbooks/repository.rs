@@ -5,6 +5,7 @@ use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto
 use crate::modules::textbooks::dto::output::TextbookResponseDto;
 use crate::error::AppError;
 
+
 pub async fn insert_textbook(
     db: &PgPool,
     title: String,
@@ -31,6 +32,7 @@ pub async fn insert_textbook(
     Ok(result)
 }
 
+
 pub async fn select_textbook_by_id(
     db: &PgPool,
     id: i32
@@ -51,6 +53,7 @@ pub async fn select_textbook_by_id(
     Ok(result)
 }
 
+
 pub async fn select_all_textbooks(
     db: &PgPool,
 ) -> Result<Vec<Textbook>, AppError> {
@@ -68,6 +71,37 @@ pub async fn select_all_textbooks(
 
     Ok(result)
 }
+
+
+pub async fn update_textbook_by_id(
+    db: &PgPool,
+    id: i32,
+    dto: UpdateTextbookDto
+) -> Result<Textbook, AppError> {
+    let result = sqlx::query_as!(
+        Textbook,
+        r#"
+        UPDATE textbooks SET
+            title = COALESCE($1, title),
+            description = COALESCE($2, description),
+            level = COALESCE($3, level),
+            is_active = COALESCE($4, is_active)
+        WHERE id = $5
+        RETURNING id, title, description, level, is_active
+        "#,
+        dto.title,
+        dto.description,
+        dto.level,
+        dto.is_active,
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|e| AppError::Database(e.to_string()))?;
+
+    result.ok_or_else(|| AppError::NotFound(format!("Textbook with id={} not found", id)))
+}
+
 
 pub async fn delete_textbook_by_id(
     db: &PgPool,

@@ -11,7 +11,7 @@ use crate::{
             delete_textbook,
             get_textbook_by_id,
             list_textbooks,
-            // update_textbook,
+            patch_textbook,
         },
     },
 };
@@ -41,11 +41,14 @@ pub async fn list_textbooks_handler(
     Ok(Json(result))
 }
 
-// pub async fn update_textbook_handler(
-//     State(state): State<AppState>,
-//     Path(id): Path<i32>,
-//     Json(dto): Json<UpdateTextbookDto>,
-// ) -> Result<impl IntoResponse, AppError> {}
+pub async fn update_textbook_handler(
+    State(state): State<AppState>,
+    Path(id): Path<i32>,
+    Json(dto): Json<UpdateTextbookDto>,
+) -> Result<impl IntoResponse, AppError> {
+    let result = patch_textbook(&state.dp_pool, id, dto).await?;
+    Ok(Json(result))
+}
 
 pub async fn delete_textbook_handler(
     State(state): State<AppState>,
