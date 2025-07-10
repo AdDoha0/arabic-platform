@@ -16,20 +16,26 @@ pub enum AppError {
 
 #[derive(Serialize)]
 struct ErrorResponse {
-    error: String
+    pub status: String,
+    pub message: String,
+    pub r#type: String,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, message) = match self {
-            AppError::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-            AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg),
-            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+        let (status_code, message, error_type) = match self {
+            AppError::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg, "database"),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg, "not_found"),
+            AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg, "validation"),
+            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg, "internal"),
         };
-    let body = Json(ErrorResponse { error: message });
 
-    (status, body).into_response()
+        let body = Json(ErrorResponse {
+            status: "error".to_string(),
+            message,
+            r#type: error_type.to_string()
+        });
 
-    } 
+        (status_code, body).into_response()
+    }
 }
