@@ -1,10 +1,11 @@
 use std::{ops::ControlFlow, os::linux::raw::stat};
-
+use axum::extract::Query;
 use axum::{extract::{State, Path}, response::IntoResponse, Json};
 use crate::{
     AppState,
     common::error::AppError,
     common::response::ApiResponse,
+    common::pagination::PaginationParams,
     modules::textbooks::{
         dto::input::{CreateTextbookDto, UpdateTextbookDto},
         service::{
@@ -22,7 +23,8 @@ use crate::{
 // фильтрация по полям (level, is_active);
 // сортировка (sort_by=title, order=desc).
 // envelope 
-
+// Пагинация
+// Кеширование
 
 pub async fn create_textbook_handler(
     State(state): State<AppState>,
@@ -43,8 +45,9 @@ pub async fn get_textbook_handler(
 
 pub async fn list_textbooks_handler(
     State(state): State<AppState>,
+    Query(pagination): Query<PaginationParams>,
 ) -> Result<impl IntoResponse, AppError> {
-    let result: Vec<super::dto::output::TextbookResponseDto> = list_textbooks(&state.dp_pool).await?;
+    let result = list_textbooks(&state.dp_pool, pagination).await?;
     Ok(ApiResponse::success(result))
 }
 

@@ -4,7 +4,7 @@ use crate::modules::textbooks::entity::{Textbook, NewTextbook};
 use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto};
 use crate::modules::textbooks::dto::output::TextbookResponseDto;
 use crate::common::error::AppError;
-
+use crate::common::pagination::PaginationParams;
 
 
 pub async fn insert_textbook(
@@ -55,8 +55,20 @@ pub async fn select_textbook_by_id(
 }
 
 
+pub async fn count_textbooks(db: &PgPool) -> Result<i64, AppError> {
+    let count = sqlx::query_scalar!("SELECT COUNT(*) FROM textbooks")
+        .fetch_one(db)
+        .await
+        .map_err(|e| AppError::Database(e.to_string()))?
+        .unwrap_or(0);
+
+    Ok(count)
+}
+
+
 pub async fn select_all_textbooks(
     db: &PgPool,
+    pagination: &PaginationParams
 ) -> Result<Vec<Textbook>, AppError> {
     let result = sqlx::query_as!(
         Textbook,
@@ -64,7 +76,10 @@ pub async fn select_all_textbooks(
         SELECT id, title, description, level, is_active
         FROM textbooks
         ORDER BY id DESC
-        "#
+        LIMIT $1 OFFSET $2
+        "#,
+        pagination.limit(),
+        pagination.offset()
     )
     .fetch_all(db)
     .await

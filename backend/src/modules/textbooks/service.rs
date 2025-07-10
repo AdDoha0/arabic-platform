@@ -4,8 +4,11 @@ use tracing_subscriber::fmt::MakeWriter;
 use crate::modules::textbooks::entity::{Textbook, NewTextbook};
 use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto};
 use crate::modules::textbooks::dto::output::TextbookResponseDto;
-use crate::modules::textbooks::{self, repository};
+use crate::modules::textbooks::repository;
+
 use crate::common::error::AppError;
+use crate::common::pagination::PaginationParams;
+use crate::common::response::{PaginatedResponse, PaginationMeta};
 
 
 // Response (Ответ) Request (Запрос)
@@ -43,10 +46,14 @@ pub async fn get_textbook_by_id(
 
 pub async fn list_textbooks(
     db: &PgPool,
-) -> Result<Vec<TextbookResponseDto>, AppError> {
-    let textbooks = repository::select_all_textbooks(db).await?;
+    pagination: PaginationParams,
+) -> Result<PaginatedResponse<TextbookResponseDto>, AppError> {
+    let total = repository::count_textbooks(db).await?;
+    let textbooks = repository::select_all_textbooks(db, &pagination).await?;
 
-    Ok(textbooks.into_iter().map(Into::into).collect())
+    let dto = textbooks.into_iter().map(Into::into).collect();
+
+    Ok(PaginatedResponse::new(dto, total, pagination.page(), pagination.limit()))
 }
 
 

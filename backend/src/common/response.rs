@@ -30,3 +30,26 @@ impl<T: Serialize> IntoResponse for ApiResponse<T> {
         Json(self).into_response()
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct PaginationMeta {
+    pub page: i64,
+    pub limit: i64,
+    pub total: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PaginatedResponse<T> {
+    pub items: Vec<T>,
+    pub pagination: PaginationMeta
+}
+
+
+impl<T>  PaginatedResponse<T> {
+    pub fn new(items: Vec<T>, total: i64, page: i64, limit: i64) -> Self {
+        Self {
+            items,
+            pagination: PaginationMeta { page, limit, total },
+        }
+    } 
+}
