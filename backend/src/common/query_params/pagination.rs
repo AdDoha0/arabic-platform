@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 pub trait HasPagination{
     fn page(&self) -> Option<i64>;
     fn limit(&self) -> Option<i64>;

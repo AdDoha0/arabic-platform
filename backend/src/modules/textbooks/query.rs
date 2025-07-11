@@ -1,14 +1,16 @@
-use crate::common::pagination::HasPagination;
+use crate::common::query_params::{
+    pagination::HasPagination,
+    sorting::HasSorting
+};
 
 use serde::Deserialize;
-
 
 #[derive(Debug, Deserialize)]
 pub struct TextbookQuery {
     pub page: Option<i64>,
     pub limit: Option<i64>,
-    pub sort: Option<String>,
-    pub level: Option<String>, // Фильтрация (если нужно)
+    pub sort_field: Option<String>,
+    pub sort_order: Option<String>,  
 }
 
 impl HasPagination for TextbookQuery {
@@ -18,5 +20,15 @@ impl HasPagination for TextbookQuery {
 
     fn limit(&self) -> Option<i64> {
         self.limit
+    }
+}
+
+impl HasSorting for TextbookQuery {
+    fn sort_field(&self) -> Option<&str> {
+        self.sort_field.as_deref()
+    }
+
+    fn sort_oreder(&self) -> Option<&str> {
+        self.sort_order.as_deref()
     }
 }

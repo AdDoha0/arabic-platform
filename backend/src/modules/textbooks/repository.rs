@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::common::pagination::HasPagination;
+use crate::common::query_params::pagination::HasPagination;
 use crate::modules::textbooks::entity::Textbook;
 use crate::modules::textbooks::dto::input::UpdateTextbookDto;
 use crate::common::error::AppError;
