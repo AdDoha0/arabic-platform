@@ -1,6 +1,4 @@
-use std::path;
-
-use axum::{Router, routing::get};
+use axum::Router;
 use crate::AppState;
 use crate::modules::textbooks;
 

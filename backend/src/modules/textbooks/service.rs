@@ -1,14 +1,14 @@
 use sqlx::PgPool;
-use tracing_subscriber::fmt::MakeWriter; 
 
-use crate::modules::textbooks::entity::{Textbook, NewTextbook};
+use crate::common::pagination::HasPagination;
+use crate::modules::textbooks::entity::NewTextbook;
 use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto};
 use crate::modules::textbooks::dto::output::TextbookResponseDto;
 use crate::modules::textbooks::repository;
 
 use crate::common::error::AppError;
-use crate::common::pagination::PaginationParams;
-use crate::common::response::{PaginatedResponse, PaginationMeta};
+use super::query::TextbookQuery;
+use crate::common::response::PaginatedResponse;
 
 
 // Response (Ответ) Request (Запрос)
@@ -46,14 +46,14 @@ pub async fn get_textbook_by_id(
 
 pub async fn list_textbooks(
     db: &PgPool,
-    pagination: PaginationParams,
+    pagination: TextbookQuery,
 ) -> Result<PaginatedResponse<TextbookResponseDto>, AppError> {
     let total = repository::count_textbooks(db).await?;
     let textbooks = repository::select_all_textbooks(db, &pagination).await?;
 
     let dto = textbooks.into_iter().map(Into::into).collect();
 
-    Ok(PaginatedResponse::new(dto, total, pagination.page(), pagination.limit()))
+    Ok(PaginatedResponse::new(dto, total, pagination.page_or_default(), pagination.limit_or_default()))
 }
 
 

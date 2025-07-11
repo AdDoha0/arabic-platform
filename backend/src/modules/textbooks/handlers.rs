@@ -1,13 +1,12 @@
-use std::{ops::ControlFlow, os::linux::raw::stat};
 use axum::extract::Query;
 use axum::{extract::{State, Path}, response::IntoResponse, Json};
 use crate::{
     AppState,
     common::error::AppError,
     common::response::ApiResponse,
-    common::pagination::PaginationParams,
     modules::textbooks::{
         dto::input::{CreateTextbookDto, UpdateTextbookDto},
+        query::TextbookQuery,
         service::{
             create_textbook,
             delete_textbook,
@@ -19,11 +18,8 @@ use crate::{
 };
 
 // НАДО ДОБАВИТЬ:
-// limit / page или offset / limit;
 // фильтрация по полям (level, is_active);
 // сортировка (sort_by=title, order=desc).
-// envelope 
-// Пагинация
 // Кеширование
 
 pub async fn create_textbook_handler(
@@ -45,7 +41,7 @@ pub async fn get_textbook_handler(
 
 pub async fn list_textbooks_handler(
     State(state): State<AppState>,
-    Query(pagination): Query<PaginationParams>,
+    Query(pagination): Query<TextbookQuery>,
 ) -> Result<impl IntoResponse, AppError> {
     let result = list_textbooks(&state.dp_pool, pagination).await?;
     Ok(ApiResponse::success(result))

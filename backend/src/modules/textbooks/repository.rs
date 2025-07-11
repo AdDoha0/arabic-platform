@@ -1,10 +1,10 @@
 use sqlx::PgPool;
 
-use crate::modules::textbooks::entity::{Textbook, NewTextbook};
-use crate::modules::textbooks::dto::input::{CreateTextbookDto, UpdateTextbookDto};
-use crate::modules::textbooks::dto::output::TextbookResponseDto;
+use crate::common::pagination::HasPagination;
+use crate::modules::textbooks::entity::Textbook;
+use crate::modules::textbooks::dto::input::UpdateTextbookDto;
 use crate::common::error::AppError;
-use crate::common::pagination::PaginationParams;
+use super::query::TextbookQuery;
 
 
 pub async fn insert_textbook(
@@ -68,7 +68,7 @@ pub async fn count_textbooks(db: &PgPool) -> Result<i64, AppError> {
 
 pub async fn select_all_textbooks(
     db: &PgPool,
-    pagination: &PaginationParams
+    pagination: &TextbookQuery
 ) -> Result<Vec<Textbook>, AppError> {
     let result = sqlx::query_as!(
         Textbook,
@@ -78,7 +78,7 @@ pub async fn select_all_textbooks(
         ORDER BY id DESC
         LIMIT $1 OFFSET $2
         "#,
-        pagination.limit(),
+        pagination.limit_or_default(),
         pagination.offset()
     )
     .fetch_all(db)
