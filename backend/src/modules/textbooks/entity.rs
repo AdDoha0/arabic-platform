@@ -1,7 +1,9 @@
 use sqlx::FromRow;
 
-use crate::modules::textbooks::dto::input::CreateTextbookDto;
-use crate::modules::textbooks::dto::output::TextbookResponseDto;
+use super::dto::{
+    input::CreateTextbookDto,
+    output::TextbookResponseDto, 
+};
 
 #[derive(Debug, FromRow)]
 pub struct Textbook {

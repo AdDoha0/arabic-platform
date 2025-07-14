@@ -17,10 +17,6 @@ use crate::{
     },
 };
 
-// НАДО ДОБАВИТЬ:
-// фильтрация по полям (level, is_active);
-// created_at TIMESTAMP DEFAULT now()
-// Кеширование
 
 pub async fn create_textbook_handler(
     State(state): State<AppState>,

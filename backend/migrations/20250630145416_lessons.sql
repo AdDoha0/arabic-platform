@@ -27,17 +27,16 @@ CREATE TABLE lessons (
 -- Конспекты к уроку
 CREATE TABLE lesson_notes (
     id SERIAL PRIMARY KEY,
-    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    lesson_id INTEGER NOT NULL UNIQUE REFERENCES lessons(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now()
 );
 
 
-
 -- YouTube-видео к уроку
 CREATE TABLE lessons_videos (
     id SERIAL PRIMARY KEY,
-    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    lesson_id INTEGER NOT NULL UNIQUE REFERENCES lessons(id) ON DELETE CASCADE,
     title TEXT,
     youtube_url TEXT NOT NULL
 );
