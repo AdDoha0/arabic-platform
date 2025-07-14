@@ -1,6 +1,10 @@
-use sqlx::PgPool;
+use sqlx::{QueryBuilder, Postgres, PgPool};
 
-use crate::common::query_params::pagination::HasPagination;
+use crate::common::query_params::{
+    pagination::HasPagination,
+    sorting::HasSorting,
+    filter::HasTextbookFilter
+};
 use crate::modules::textbooks::entity::Textbook;
 use crate::modules::textbooks::dto::input::UpdateTextbookDto;
 use crate::common::error::AppError;
@@ -68,24 +72,61 @@ pub async fn count_textbooks(db: &PgPool) -> Result<i64, AppError> {
 
 pub async fn select_all_textbooks(
     db: &PgPool,
-    pagination: &TextbookQuery
+    params: &TextbookQuery,
 ) -> Result<Vec<Textbook>, AppError> {
-    let result = sqlx::query_as!(
-        Textbook,
-        r#"
-        SELECT id, title, description, level, is_active
-        FROM textbooks
-        ORDER BY id DESC
-        LIMIT $1 OFFSET $2
-        "#,
-        pagination.limit_or_default(),
-        pagination.offset()
-    )
-    .fetch_all(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    let mut builder = QueryBuilder::<Postgres>::new(
+        "SELECT id, title, description, level, is_active FROM textbooks"
+    );
+
+    let mut has_where = false;
+
+
+    if let Some(level) = params.level() {
+        builder.push(if has_where { " AND" } else { " WHERE" });
+        builder.push(" level = ").push_bind(level);
+        has_where = true;
+    }
+
+    if let Some(is_active) = params.is_active() {
+        builder.push(if has_where { " AND" } else { " WHERE" });
+        builder.push(" is_active = ").push_bind(is_active);
+        has_where = true;
+    }
+
+    let sort_field = match params.sort_field() {
+        Some("title") => "title",
+        Some("level") => "level",
+        _ => "id"
+    };
+
+    let sort_order = match params.sort_oreder() {
+        Some("asc") => "ASC",
+        _ => "DESC"       
+    };
+
+    builder
+        .push(" ORDER BY ")
+        .push(sort_field)
+        .push(" ")
+        .push(sort_order);
+
+
+    builder
+        .push(" LIMIT ")
+        .push_bind(params.limit_or_default())
+        .push(" OFFSET ")
+        .push_bind(params.offset());
+    
+
+    let query = builder.build_query_as::<Textbook>();
+
+    let result = query
+        .fetch_all(db)
+        .await
+        .map_err(|e| AppError::Database(e.to_string()))?;
 
     Ok(result)
+
 }
 
 

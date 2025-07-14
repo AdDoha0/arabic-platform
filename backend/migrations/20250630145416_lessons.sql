@@ -1,6 +1,3 @@
--- Add migration script here
--- Add migration script here
-
 -- Пользователи (Telegram)
 CREATE TABLE users  (
     id SERIAL PRIMARY KEY,

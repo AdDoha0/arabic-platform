@@ -19,7 +19,7 @@ use crate::{
 
 // НАДО ДОБАВИТЬ:
 // фильтрация по полям (level, is_active);
-// сортировка (sort_by=title, order=desc).
+// created_at TIMESTAMP DEFAULT now()
 // Кеширование
 
 pub async fn create_textbook_handler(
