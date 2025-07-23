@@ -1,3 +1,5 @@
+use std::result;
+
 use sqlx::{QueryBuilder, Postgres, PgPool};
 
 use crate::common::query_params::{
@@ -14,6 +16,10 @@ use crate::modules::lessons::{
 use crate::common::error::AppError;
 
 
+// POST /lessons — создание нового урока (принимает поля lesson)
+// DELETE /lessons/{id} — удаление урока
+
+
 pub async fn select_lesson_by_id(
     db: &PgPool, 
     id: i32
@@ -25,7 +31,7 @@ pub async fn select_lesson_by_id(
             FROM lessons
         WHERE id = $1 
         "#,
-        id
+        id        
     )
     .fetch_optional(db)
     .await
@@ -34,6 +40,22 @@ pub async fn select_lesson_by_id(
     Ok(result)
 }
 
+
+pub async fn delete_lesson_by_id(
+    db: &PgPool,
+    id: i32
+) -> Result<u64, AppError> {
+    let result = sqlx::query!(
+        "DELETE FROM lessons WHERE id = $1",
+        id
+    )
+    .execute(db)
+    .await
+    .map_err(|e| AppError::Database(e.to_string()))?;
+
+    Ok(result.rows_affected())
+
+}
 
 
 pub async fn update_lesson_by_id(
