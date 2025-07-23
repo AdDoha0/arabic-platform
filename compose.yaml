@@ -1,0 +1,50 @@
+
+services:
+  postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - dbnet
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - dbnet
+    depends_on:
+      - postgres
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: huna_back_dev
+    container_name: huna_back_dev
+    command: bash -c "sleep infinity"
+    ports:
+      - "2000:2000"
+    networks:
+      - dbnet
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "${DATABASE_URL}"
+
+volumes:
+  postgres-data:
+
+networks:
+  dbnet:
+    driver: bridge
