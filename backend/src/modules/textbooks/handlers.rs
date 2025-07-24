@@ -4,16 +4,17 @@ use crate::{
     AppState,
     common::error::AppError,
     common::response::ApiResponse,
-    modules::textbooks::{
-        dto::input::{CreateTextbookDto, UpdateTextbookDto},
-        query::TextbookQuery,
-        service::{
-            create_textbook,
-            delete_textbook,
-            get_textbook_by_id,
-            list_textbooks,
-            patch_textbook,
-        },
+};
+
+use super::{
+    dto::input::{CreateTextbookDto, UpdateTextbookDto},
+    query::TextbookQuery,
+    service::{
+        create_textbook,
+        delete_textbook,
+        get_textbook_by_id,
+        list_textbooks,
+        patch_textbook,
     },
 };
 
@@ -35,6 +36,7 @@ pub async fn get_textbook_handler(
     Ok(ApiResponse::success(result))
 }
 
+
 pub async fn list_textbooks_handler(
     State(state): State<AppState>,
     Query(pagination): Query<TextbookQuery>,
@@ -42,6 +44,7 @@ pub async fn list_textbooks_handler(
     let result = list_textbooks(&state.dp_pool, pagination).await?;
     Ok(ApiResponse::success(result))
 }
+
 
 pub async fn update_textbook_handler(
     State(state): State<AppState>,
@@ -51,6 +54,7 @@ pub async fn update_textbook_handler(
     let result = patch_textbook(&state.dp_pool, id, dto).await?;
     Ok(ApiResponse::success(result))
 }
+
 
 pub async fn delete_textbook_handler(
     State(state): State<AppState>,

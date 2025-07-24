@@ -1,15 +1,12 @@
-use std::result;
-
 use sqlx::{QueryBuilder, Postgres, PgPool};
 
 use crate::common::query_params::{
     pagination::HasPagination,
     sorting::HasSorting,
-    filter::HasTextbookFilter
 };
 
 use crate::modules::lessons::{
-    dto::input::{CreateLessonDto, UpdateLessonDto},
+    dto::input::UpdateLessonDto,
     entity::Lesson
 };
 
@@ -40,29 +37,40 @@ pub async fn select_all_lessons(
     };
 
     builder
-    .push(" ORDER BY ")
-    .push(sort_field)
-    .push(" ")
-    .push(sort_order);
+        .push(" ORDER BY ")
+        .push(sort_field)
+        .push(" ")
+        .push(sort_order);
 
 
-builder
-    .push(" LIMIT ")
-    .push_bind(params.limit_or_default())
-    .push(" OFFSET ")
-    .push_bind(params.offset());
+    builder
+        .push(" LIMIT ")
+        .push_bind(params.limit_or_default())
+        .push(" OFFSET ")
+        .push_bind(params.offset());
 
-    let query = builder.build_query_as::<Lesson>();
+        let query = builder.build_query_as::<Lesson>();
 
-    let result = query
-    .fetch_all(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
-
-Ok(result)
-
-
+        let result = query
+        .fetch_all(db)
+        .await
+        .map_err(|e| AppError::Database(e.to_string()))?;
+    
+    Ok(result)
 }
+
+
+pub async fn count_lessons(db: &PgPool) -> Result<i64, AppError> {
+    let count = sqlx::query_scalar!("SELECT COUNT(*) FROM lessons")
+        .fetch_one(db)
+        .await
+        .map_err(|e| AppError::Database(e.to_string()))?
+        .unwrap_or(0);
+
+    Ok(count)
+}
+
+
 
 
 
@@ -70,7 +78,7 @@ Ok(result)
 pub async fn insert_lesson(
     db: &PgPool,
     textbook_id: i32, 
-    title: Option<String>,
+    title: String,
     description: Option<String>
 ) -> Result<Lesson, AppError> {
     let result = sqlx::query_as!(
