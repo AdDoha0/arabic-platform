@@ -12,6 +12,7 @@ pub struct Lesson {
     pub textbook_id: i32,
     pub title: String,
     pub description: Option<String>,
+    pub created_at: String
 }
 
 
@@ -40,7 +41,8 @@ impl From<Lesson> for LessonResponseDto  {
             id: tb.id,
             textbook_id: tb.textbook_id,
             title: tb.title, 
-            description: tb.description
+            description: tb.description,
+            created_at: tb.created_at
         }
     }    
 }

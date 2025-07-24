@@ -70,6 +70,7 @@ pub async fn count_textbooks(db: &PgPool) -> Result<i64, AppError> {
 }
 
 
+
 pub async fn select_all_textbooks(
     db: &PgPool,
     params: &TextbookQuery,
@@ -93,7 +94,7 @@ pub async fn select_all_textbooks(
         has_where = true;
     }
 
-    let sort_field = match params.sort_field() {
+    let sort_field: &'static str = match params.sort_field() {
         Some("title") => "title",
         Some("level") => "level",
         _ => "id"
