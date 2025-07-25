@@ -2,7 +2,8 @@ use axum::Router;
 use crate::AppState;
 use crate::modules::{
     textbooks,
-    lessons
+    lessons,
+    lesson_video
 };
 
 pub fn app_router(state: AppState) -> Router {
@@ -16,6 +17,10 @@ pub fn app_router(state: AppState) -> Router {
         .nest(
             &format!("{api_version}/"), 
             lessons::routes::routes()
+        )
+        .nest(
+            &format!("{api_version}/"), 
+            lesson_video::routes::routes()
         )
         .with_state(state)
 }
