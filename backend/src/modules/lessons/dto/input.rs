@@ -11,7 +11,7 @@ pub struct CreateLessonDto {
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateLessonDto {
-    pub textbook_id: i32,
-    pub title: String,
+    pub textbook_id: Option<i32>,
+    pub title: Option<String>,
     pub description: Option<String>,
 }

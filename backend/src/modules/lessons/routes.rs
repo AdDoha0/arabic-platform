@@ -5,10 +5,10 @@ use super::handlers::*;
 
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/textbooks", 
+        .route("/lessons", 
         get(list_lessons_handler)
         .post(create_lesson_handler))
-        .route("/textbooks/{id}",
+        .route("/lessons/{id}",
             get(get_lesson_handler)
             .delete(delete_lesson_handler)
             .patch(update_lesson_handler)

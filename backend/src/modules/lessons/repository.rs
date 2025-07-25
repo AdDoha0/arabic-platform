@@ -23,7 +23,7 @@ pub async fn select_all_lessons(
     params: &LessonQuery,
 ) -> Result<Vec<Lesson>, AppError> {
     let mut builder = QueryBuilder::<Postgres>::new(
-        "SELECT id, title, description, textbook_id, created_at FROM textbooks"
+        "SELECT id, title, description, textbook_id, created_at FROM lessons"
     );
 
     let sort_field: &'static str = match params.sort_field() {
@@ -82,11 +82,15 @@ pub async fn insert_lesson(
     description: Option<String>
 ) -> Result<Lesson, AppError> {
     let result = sqlx::query_as!(
+        Lesson,
         r#"
         INSERT INTO lessons (textbook_id, title, description)
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3)
         RETURNING id, textbook_id, title, description, created_at
         "#,
+        textbook_id, 
+        title,
+        description
     )
     .fetch_one(db)
     .await
@@ -149,7 +153,7 @@ pub async fn update_lesson_by_id(
             title = COALESCE($2, title),
             description = COALESCE($3, description)
         WHERE id = $4
-        RETURNING id, textbook_id, title, description
+        RETURNING id, textbook_id, title, description, created_at
         "#, 
         dto.textbook_id,
         dto.title, 

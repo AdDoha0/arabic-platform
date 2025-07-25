@@ -1,5 +1,5 @@
-/home/user/my_projects/huna_arabic/backend/target/debug/build/thiserror-0ab41f997ece6c55/build_script_build-0ab41f997ece6c55.d: /home/user/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs
+/app/target/debug/build/thiserror-0ab41f997ece6c55/build_script_build-0ab41f997ece6c55.d: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs
 
-/home/user/my_projects/huna_arabic/backend/target/debug/build/thiserror-0ab41f997ece6c55/build_script_build-0ab41f997ece6c55: /home/user/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs
+/app/target/debug/build/thiserror-0ab41f997ece6c55/build_script_build-0ab41f997ece6c55: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs
 
-/home/user/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/build.rs:

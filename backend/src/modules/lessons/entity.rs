@@ -1,4 +1,5 @@
 use sqlx::FromRow;
+use sqlx::types::chrono::NaiveDateTime;
 
 use super::dto::{
     input::CreateLessonDto,
@@ -12,7 +13,7 @@ pub struct Lesson {
     pub textbook_id: i32,
     pub title: String,
     pub description: Option<String>,
-    pub created_at: String
+    pub created_at: NaiveDateTime
 }
 
 
