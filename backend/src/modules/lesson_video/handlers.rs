@@ -3,6 +3,7 @@ use crate::{AppState, common::error::AppError, common::response::ApiResponse};
 use super::dto::input::{CreateLessonVideoDto, UpdateLessonVideoDto};
 use super::service::{get_lesson_video, create_lesson_video, update_lesson_video, delete_lesson_video};
 
+
 pub async fn get_lesson_video_handler(
     State(state): State<AppState>,
     Path(lesson_id): Path<i32>,

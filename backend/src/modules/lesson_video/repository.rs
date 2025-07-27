@@ -24,6 +24,7 @@ pub async fn insert_lesson_video(
     Ok(result)
 }
 
+
 pub async fn update_lesson_video(
     db: &PgPool,
     lesson_id: i32,

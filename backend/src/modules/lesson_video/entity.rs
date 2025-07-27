@@ -21,8 +21,9 @@ pub struct NewLessonVideo {
     pub youtube_url: String,
 }
 
-// Преобразование DTO → NewLessonVideo
 
+
+// Преобразование DTO → NewLessonVideo
 impl From<CreateLessonVideoDto> for NewLessonVideo {
     fn from(dto: CreateLessonVideoDto) -> Self {
         Self {
