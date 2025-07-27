@@ -4,6 +4,35 @@ use crate::modules::lesson_view::entity::{
     NewLessonTopic, NewLessonTheory, NewLessonHomework,
 };
 
+use crate::modules::lesson_video::entity::NewLessonVideo;
+
+
+pub trait IntoNewWithLessonId {
+    type Output;
+
+    fn into_new(self, lesson_id: i32) -> Self::Output;
+}
+
+
+#[derive(Debug, Deserialize)]
+pub struct LessonFullCreateDto {
+    pub textbook_id: i32,
+    pub title: String,
+    pub description: Option<String>,
+    pub is_active: Option<bool>,
+
+    pub topics: Vec<CreateLessonTopicDto>,
+    pub theory: Option<CreateLessonTheoryDto>,
+    pub homework: Option<CreateLessonHomeworkDto>,
+    pub video: Option<CreateLessonVideoDto>,
+}
+
+
+#[derive(Debug, Deserialize)]
+pub struct CreateLessonVideoDto {
+    pub title: Option<String>,
+    pub youtube_url: String,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct CreateLessonTopicDto {
@@ -20,11 +49,18 @@ pub struct CreateLessonHomeworkDto {
     pub task: String,
 }
 
-pub trait IntoNewWithLessonId {
-    type Output;
+impl IntoNewWithLessonId for CreateLessonVideoDto {
+    type Output = NewLessonVideo;
 
-    fn into_new(self, lesson_id: i32) -> Self::Output;
+    fn into_new(self, lesson_id: i32) -> Self::Output {
+        NewLessonVideo {
+            lesson_id,
+            title: self.title,
+            youtube_url: self.youtube_url,
+        }
+    }
 }
+
 
 impl IntoNewWithLessonId for CreateLessonTopicDto {
     type Output = NewLessonTopic;

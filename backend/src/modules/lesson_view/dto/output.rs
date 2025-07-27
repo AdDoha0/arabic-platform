@@ -3,6 +3,30 @@ use serde::Serialize;
 use crate::modules::lesson_view::entity::{
     LessonTopic, LessonTheory, LessonHomework,
 };
+use crate::modules::lesson_video::entity::LessonVideo;
+
+#[derive(Debug, Serialize)]
+pub struct LessonFullOutputDto {
+    pub id: i32,
+    pub textbook_id: i32,
+    pub title: String,
+    pub description: Option<String>,
+    pub is_active: bool,
+    pub created_at: chrono::NaiveDateTime,
+
+    pub topics: Vec<LessonTopicDto>,
+    pub theory: Option<LessonTheoryDto>,
+    pub homework: Option<LessonHomeworkDto>,
+    pub video: Option<LessonVideoDto>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LessonVideoDto {
+    pub id: i32, 
+    pub title: Option<String>,
+    pub youtube_url: String,
+}
+
 
 #[derive(Debug, Serialize)]
 pub struct LessonTopicDto {
@@ -24,6 +48,17 @@ pub struct LessonHomeworkDto {
 
 
 // Конвертации: Entity → Output DTO
+impl From<LessonVideo> for LessonVideoDto {
+    fn from(entity: LessonVideo) -> Self {
+        Self {
+            id: entity.id,
+            title: entity.title,
+            youtube_url: entity.youtube_url
+        }
+    }
+}
+
+
 impl From<LessonTopic> for LessonTopicDto {
     fn from(entity: LessonTopic) -> Self {
         Self {
