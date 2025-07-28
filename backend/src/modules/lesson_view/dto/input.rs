@@ -19,7 +19,6 @@ pub struct LessonFullCreateDto {
     pub textbook_id: i32,
     pub title: String,
     pub description: Option<String>,
-    pub is_active: Option<bool>,
 
     pub topics: Vec<CreateLessonTopicDto>,
     pub theory: Option<CreateLessonTheoryDto>,

@@ -11,7 +11,6 @@ pub struct LessonFullOutputDto {
     pub textbook_id: i32,
     pub title: String,
     pub description: Option<String>,
-    pub is_active: bool,
     pub created_at: chrono::NaiveDateTime,
 
     pub topics: Vec<LessonTopicDto>,
