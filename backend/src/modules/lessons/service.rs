@@ -13,7 +13,6 @@ use crate::common::{
 };
 
 
-
 pub async fn create_lesson(
     db: &PgPool, 
     dto: CreateLessonDto,
@@ -22,15 +21,12 @@ pub async fn create_lesson(
 
     let lesson = repository::insert_lesson(
         db,
-        new_tb.textbook_id,
-        new_tb.title,
-        new_tb.description
+        new_tb
     )
     .await?;
 
     Ok(lesson.into())
 }
-
 
 
 pub async fn get_lesson_by_id(

@@ -5,6 +5,7 @@ use crate::common::query_params::{
     sorting::HasSorting,
 };
 
+use crate::modules::lessons::entity::NewLesson;
 use crate::modules::lessons::{
     dto::input::UpdateLessonDto,
     entity::Lesson
@@ -70,16 +71,9 @@ pub async fn count_lessons(db: &PgPool) -> Result<i64, AppError> {
     Ok(count)
 }
 
-
-
-
-
-
 pub async fn insert_lesson(
     db: &PgPool,
-    textbook_id: i32, 
-    title: String,
-    description: Option<String>
+    dto: NewLesson
 ) -> Result<Lesson, AppError> {
     let result = sqlx::query_as!(
         Lesson,
@@ -88,9 +82,9 @@ pub async fn insert_lesson(
         VALUES ($1, $2, $3)
         RETURNING id, textbook_id, title, description, created_at
         "#,
-        textbook_id, 
-        title,
-        description
+        dto.textbook_id, 
+        dto.title,
+        dto.description
     )
     .fetch_one(db)
     .await

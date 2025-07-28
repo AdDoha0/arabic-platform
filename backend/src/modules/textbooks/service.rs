@@ -21,10 +21,7 @@ pub async fn create_textbook(
 
     let textbook = repository::insert_textbook(
         db,
-        new_tb.title,
-        new_tb.description,
-        new_tb.level,
-        new_tb.is_active,
+        new_tb
     )
     .await?;
 
