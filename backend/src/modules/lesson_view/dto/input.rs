@@ -26,24 +26,35 @@ pub struct LessonFullCreateDto {
     pub video: Option<CreateLessonVideoDto>,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct LessonFullUpdateDto {
+    pub textbook_id: Option<i32>,
+    pub title: Option<String>,
+    pub description: Option<String>,
 
-#[derive(Debug, Deserialize)]
+    pub topics: Option<Vec<CreateLessonTopicDto>>,
+    pub theory: Option<CreateLessonTheoryDto>,
+    pub homework: Option<CreateLessonHomeworkDto>,
+    pub video: Option<CreateLessonVideoDto>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct CreateLessonVideoDto {
     pub title: Option<String>,
     pub youtube_url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct CreateLessonTopicDto {
     pub topic: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct CreateLessonTheoryDto {
     pub content: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct CreateLessonHomeworkDto {
     pub task: String,
 }

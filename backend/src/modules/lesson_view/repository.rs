@@ -1,83 +1,177 @@
-use sqlx::PgPool;
+// src/modules/lesson_view/repository.rs
+
+use sqlx::{PgPool, Postgres, Transaction};
 use crate::common::error::AppError;
-use crate::modules::lessons::entity::Lesson as LessonEntity;
+use crate::modules::lessons::entity::{Lesson, NewLesson};
 use crate::modules::lesson_video::entity::{LessonVideo, NewLessonVideo};
 use crate::modules::lesson_view::entity::{
-    LessonTopic, LessonTheory, LessonHomework,
-    NewLessonTopic, NewLessonTheory, NewLessonHomework,
+    LessonTopic, NewLessonTopic,
+    LessonTheory, NewLessonTheory,
+    LessonHomework, NewLessonHomework,
 };
 use crate::modules::lesson_view::dto::output::LessonFullOutputDto;
 
-// Вставка тем урока
-pub async fn insert_topics(
-    db: &PgPool,
-    topics: Vec<NewLessonTopic>,
+// --- CRUD for base lesson ---
+pub async fn insert_lesson_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    dto: NewLesson
+) -> Result<Lesson, AppError> {
+    let lesson = sqlx::query_as!(
+        Lesson,
+        r#"INSERT INTO lessons (textbook_id, title, description)
+        VALUES ($1, $2, $3)
+        RETURNING id, textbook_id, title, description, created_at"#,
+        dto.textbook_id, dto.title, dto.description
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| AppError::Database(e.to_string()))?;
+
+    Ok(lesson)
+}
+
+pub async fn update_lesson_by_id_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    id: i32,
+    dto: crate::modules::lesson_view::dto::input::LessonFullUpdateDto,
+) -> Result<Lesson, AppError> {
+    // Only update provided fields
+    let lesson = sqlx::query_as!(
+        Lesson,
+        r#"UPDATE lessons SET
+           textbook_id = COALESCE($2, textbook_id),
+           title       = COALESCE($3, title),
+           description = COALESCE($4, description)
+           WHERE id = $1
+           RETURNING id, textbook_id, title, description, created_at"#,
+        id, dto.textbook_id, dto.title, dto.description
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| AppError::Database(e.to_string()))?;
+
+    Ok(lesson)
+}
+
+pub async fn delete_full_lesson_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    lesson_id: i32,
 ) -> Result<(), AppError> {
-    if topics.is_empty() {
-        return Ok(());
-    }
-
-    let mut query = sqlx::QueryBuilder::new(
-        "INSERT INTO lesson_topics (lesson_id, topic) "
-    );
-
-    query.push_values(topics, |mut b, topic| {
-        b.push_bind(topic.lesson_id)
-         .push_bind(topic.topic);
-    });
-
-    query
-        .build()
-        .execute(db)
-        .await
-        .map_err(|e| AppError::Database(e.to_string()))?;
+    // Delete children
+    sqlx::query!("DELETE FROM lesson_topics WHERE lesson_id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    sqlx::query!("DELETE FROM lesson_theory WHERE lesson_id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    sqlx::query!("DELETE FROM lesson_homework WHERE lesson_id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    sqlx::query!("DELETE FROM lessons_videos WHERE lesson_id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    // Then delete lesson
+    sqlx::query!("DELETE FROM lessons WHERE id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
 
     Ok(())
 }
 
-// Вставка теории урока
-pub async fn insert_theory(
-    db: &PgPool,
-    theory: NewLessonTheory,
+// --- CRUD for topics ---
+
+pub async fn insert_topics_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    topics: Vec<NewLessonTopic>,
+) -> Result<(), AppError> {
+    if topics.is_empty() { return Ok(()); }
+    let mut builder = sqlx::QueryBuilder::new(
+        "INSERT INTO lesson_topics (lesson_id, topic)"
+    );
+    builder.push_values(topics, |mut b, t| {
+        b.push_bind(t.lesson_id).push_bind(t.topic.clone());
+    });
+    builder.build().execute(&mut **tx)
+        .await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
+pub async fn delete_topics_by_lesson(
+    tx: &mut Transaction<'_, Postgres>,
+    lesson_id: i32
+) -> Result<(), AppError> {
+    sqlx::query!("DELETE FROM lesson_topics WHERE lesson_id = $1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
+// --- CRUD for theory ---
+
+pub async fn insert_theory_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    dto: NewLessonTheory
 ) -> Result<LessonTheory, AppError> {
-    let result = sqlx::query_as!(
+    let res = sqlx::query_as!(
         LessonTheory,
-        r#"
-        INSERT INTO lesson_theory (lesson_id, content)
-        VALUES ($1, $2)
-        RETURNING id, lesson_id, content
-        "#,
-        theory.lesson_id,
-        theory.content
+        "INSERT INTO lesson_theory (lesson_id, content) VALUES ($1,$2) RETURNING id,lesson_id,content",
+        dto.lesson_id, dto.content
     )
-    .fetch_one(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
-
-    Ok(result)
+    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(res)
 }
 
-// Вставка домашнего задания
-pub async fn insert_homework(
-    db: &PgPool,
-    homework: NewLessonHomework,
+pub async fn delete_theory_by_lesson(
+    tx: &mut Transaction<'_, Postgres>,
+    lesson_id: i32
+) -> Result<(), AppError> {
+    sqlx::query!("DELETE FROM lesson_theory WHERE lesson_id=$1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
+// --- CRUD for homework ---
+
+pub async fn insert_homework_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    dto: NewLessonHomework
 ) -> Result<LessonHomework, AppError> {
-    let result = sqlx::query_as!(
+    let res = sqlx::query_as!(
         LessonHomework,
-        r#"
-        INSERT INTO lesson_homework (lesson_id, task)
-        VALUES ($1, $2)
-        RETURNING id, lesson_id, task
-        "#,
-        homework.lesson_id,
-        homework.task
+        "INSERT INTO lesson_homework (lesson_id,task) VALUES ($1,$2) RETURNING id,lesson_id,task",
+        dto.lesson_id, dto.task
     )
-    .fetch_one(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
-
-    Ok(result)
+    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(res)
 }
+
+pub async fn delete_homework_by_lesson(
+    tx: &mut Transaction<'_, Postgres>,
+    lesson_id: i32
+) -> Result<(), AppError> {
+    sqlx::query!("DELETE FROM lesson_homework WHERE lesson_id=$1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
+// --- CRUD for video ---
+
+pub async fn insert_lesson_video_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    dto: NewLessonVideo
+) -> Result<LessonVideo, AppError> {
+    let res = sqlx::query_as!(
+        LessonVideo,
+        "INSERT INTO lessons_videos (lesson_id,title,youtube_url) VALUES ($1,$2,$3) RETURNING id,lesson_id,title,youtube_url",
+        dto.lesson_id, dto.title, dto.youtube_url
+    )
+    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(res)
+}
+
+pub async fn delete_video_by_lesson(
+    tx: &mut Transaction<'_, Postgres>,
+    lesson_id: i32
+) -> Result<(), AppError> {
+    sqlx::query!("DELETE FROM lessons_videos WHERE lesson_id=$1", lesson_id)
+        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
 
 // Получение полного урока по ID
 pub async fn get_full_lesson_by_id(
@@ -142,7 +236,7 @@ pub async fn get_full_lesson_by_id(
     .await
     .map_err(|e| AppError::Database(e.to_string()))?;
 
-    // Получаем видео урока (используем функцию из lesson_video модуля)
+    // Получаем видео урока
     let video = crate::modules::lesson_video::repository::select_lesson_video_by_lesson_id(db, lesson_id).await?;
 
     // Собираем результат
@@ -160,3 +254,4 @@ pub async fn get_full_lesson_by_id(
 
     Ok(result)
 }
+
