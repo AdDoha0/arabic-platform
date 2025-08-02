@@ -54,8 +54,7 @@ pub async fn select_all_lessons(
 
         let result = query
         .fetch_all(db)
-        .await
-        .map_err(|e| AppError::Database(e.to_string()))?;
+        .await?;
     
     Ok(result)
 }
@@ -64,8 +63,7 @@ pub async fn select_all_lessons(
 pub async fn count_lessons(db: &PgPool) -> Result<i64, AppError> {
     let count = sqlx::query_scalar!("SELECT COUNT(*) FROM lessons")
         .fetch_one(db)
-        .await
-        .map_err(|e| AppError::Database(e.to_string()))?
+        .await?
         .unwrap_or(0);
 
     Ok(count)
@@ -87,8 +85,7 @@ pub async fn insert_lesson(
         dto.description
     )
     .fetch_one(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result)
 }
@@ -109,8 +106,7 @@ pub async fn select_lesson_by_id(
         id        
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result)
 }
@@ -126,8 +122,7 @@ pub async fn delete_lesson_by_id(
         id
     )
     .execute(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result.rows_affected())
 
@@ -155,8 +150,7 @@ pub async fn update_lesson_by_id(
         id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     result.ok_or_else(|| AppError::NotFound(format!("Lesson with id={} not found", id)))
 

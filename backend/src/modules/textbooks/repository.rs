@@ -28,8 +28,7 @@ pub async fn insert_textbook(
         dto.is_active
     )
     .fetch_one(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result)
 }
@@ -49,8 +48,7 @@ pub async fn select_textbook_by_id(
         id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result)
 }
@@ -60,7 +58,7 @@ pub async fn count_textbooks(db: &PgPool) -> Result<i64, AppError> {
     let count = sqlx::query_scalar!("SELECT COUNT(*) FROM textbooks")
         .fetch_one(db)
         .await
-        .map_err(|e| AppError::Database(e.to_string()))?
+?
         .unwrap_or(0);
 
     Ok(count)
@@ -120,8 +118,7 @@ pub async fn select_all_textbooks(
 
     let result = query
         .fetch_all(db)
-        .await
-        .map_err(|e| AppError::Database(e.to_string()))?;
+        .await?;
 
     Ok(result)
 
@@ -151,8 +148,7 @@ pub async fn update_textbook_by_id(
         id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     result.ok_or_else(|| AppError::NotFound(format!("Textbook with id={} not found", id)))
 }
@@ -167,8 +163,7 @@ pub async fn delete_textbook_by_id(
         id
     )
     .execute(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(result.rows_affected())
 }

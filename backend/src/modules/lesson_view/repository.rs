@@ -24,8 +24,7 @@ pub async fn insert_lesson_tx(
         dto.textbook_id, dto.title, dto.description
     )
     .fetch_one(&mut *tx)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(lesson)
 }
@@ -47,8 +46,7 @@ pub async fn update_lesson_by_id_tx(
         id, dto.textbook_id, dto.title, dto.description
     )
     .fetch_one(&mut *tx)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     Ok(lesson)
 }
@@ -59,16 +57,16 @@ pub async fn delete_full_lesson_tx(
 ) -> Result<(), AppError> {
     // Delete children
     sqlx::query!("DELETE FROM lesson_topics WHERE lesson_id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     sqlx::query!("DELETE FROM lesson_theory WHERE lesson_id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     sqlx::query!("DELETE FROM lesson_homework WHERE lesson_id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     sqlx::query!("DELETE FROM lessons_videos WHERE lesson_id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     // Then delete lesson
     sqlx::query!("DELETE FROM lessons WHERE id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
 
     Ok(())
 }
@@ -87,7 +85,7 @@ pub async fn insert_topics_tx(
         b.push_bind(t.lesson_id).push_bind(t.topic.clone());
     });
     builder.build().execute(&mut **tx)
-        .await.map_err(|e| AppError::Database(e.to_string()))?;
+        .await?;
     Ok(())
 }
 
@@ -96,7 +94,7 @@ pub async fn delete_topics_by_lesson(
     lesson_id: i32
 ) -> Result<(), AppError> {
     sqlx::query!("DELETE FROM lesson_topics WHERE lesson_id = $1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx)?;
     Ok(())
 }
 
@@ -111,7 +109,7 @@ pub async fn insert_theory_tx(
         "INSERT INTO lesson_theory (lesson_id, content) VALUES ($1,$2) RETURNING id,lesson_id,content",
         dto.lesson_id, dto.content
     )
-    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    .fetch_one(&mut *tx).await?;
     Ok(res)
 }
 
@@ -120,7 +118,7 @@ pub async fn delete_theory_by_lesson(
     lesson_id: i32
 ) -> Result<(), AppError> {
     sqlx::query!("DELETE FROM lesson_theory WHERE lesson_id=$1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     Ok(())
 }
 
@@ -135,7 +133,7 @@ pub async fn insert_homework_tx(
         "INSERT INTO lesson_homework (lesson_id,task) VALUES ($1,$2) RETURNING id,lesson_id,task",
         dto.lesson_id, dto.task
     )
-    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    .fetch_one(&mut *tx).await?;
     Ok(res)
 }
 
@@ -144,7 +142,7 @@ pub async fn delete_homework_by_lesson(
     lesson_id: i32
 ) -> Result<(), AppError> {
     sqlx::query!("DELETE FROM lesson_homework WHERE lesson_id=$1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     Ok(())
 }
 
@@ -159,7 +157,7 @@ pub async fn insert_lesson_video_tx(
         "INSERT INTO lessons_videos (lesson_id,title,youtube_url) VALUES ($1,$2,$3) RETURNING id,lesson_id,title,youtube_url",
         dto.lesson_id, dto.title, dto.youtube_url
     )
-    .fetch_one(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+    .fetch_one(&mut *tx).await?;
     Ok(res)
 }
 
@@ -168,7 +166,7 @@ pub async fn delete_video_by_lesson(
     lesson_id: i32
 ) -> Result<(), AppError> {
     sqlx::query!("DELETE FROM lessons_videos WHERE lesson_id=$1", lesson_id)
-        .execute(&mut *tx).await.map_err(|e| AppError::Database(e.to_string()))?;
+        .execute(&mut *tx).await?;
     Ok(())
 }
 
@@ -189,9 +187,7 @@ pub async fn get_full_lesson_by_id(
         lesson_id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?
-    .ok_or_else(|| AppError::NotFound(format!("Lesson with id={} not found", lesson_id)))?;
+    .await?;
 
     // Получаем темы урока
     let topics = sqlx::query_as!(
@@ -205,8 +201,7 @@ pub async fn get_full_lesson_by_id(
         lesson_id
     )
     .fetch_all(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     // Получаем теорию урока
     let theory = sqlx::query_as!(
@@ -219,8 +214,7 @@ pub async fn get_full_lesson_by_id(
         lesson_id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     // Получаем домашнее задание
     let homework = sqlx::query_as!(
@@ -233,8 +227,7 @@ pub async fn get_full_lesson_by_id(
         lesson_id
     )
     .fetch_optional(db)
-    .await
-    .map_err(|e| AppError::Database(e.to_string()))?;
+    .await?;
 
     // Получаем видео урока
     let video = crate::modules::lesson_video::repository::select_lesson_video_by_lesson_id(db, lesson_id).await?;

@@ -27,7 +27,7 @@ pub struct NewLessonVideo {
 impl From<CreateLessonVideoDto> for NewLessonVideo {
     fn from(dto: CreateLessonVideoDto) -> Self {
         Self {
-            lesson_id: dto.lesson_id.expect("lesson_id должен быть передан через path"),
+            lesson_id: dto.lesson_id,
             title: dto.title,
             youtube_url: dto.youtube_url,
         }

@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct CreateLessonVideoDto {
-    pub lesson_id: Option<i32>,
+    pub lesson_id: i32,
     pub title: Option<String>,
     pub youtube_url: String,
 }
