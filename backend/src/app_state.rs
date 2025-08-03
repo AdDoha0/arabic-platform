@@ -8,15 +8,43 @@ use crate::modules::lesson_video::{
     }
 };
 
+use crate::modules::lessons::{
+    repository::postgres::PostgresLessonRepository, 
+    service::{
+        service_impl::LessonServiceImpl, 
+        service_trait::LessonService
+    }
+};
+
+use crate::modules::textbooks::{
+    repository::postgres::PostgresTextbookRepository, 
+    service::{
+        service_impl::TextbookServiceImpl, 
+        service_trait::TextbookService
+    }
+};
+
+
 /// Контейнер сервисов
 #[derive(Clone)]
 pub struct Services {
     pub lesson_video: Arc<dyn LessonVideoService + Send + Sync>,
+    pub lesson: Arc<dyn LessonService + Send + Sync>,
+    pub textbook: Arc<dyn TextbookService + Send + Sync>,
+
 }
 
 impl Services {
     pub fn lesson_video(&self) -> &(dyn LessonVideoService + Send + Sync) {
         &*self.lesson_video
+    }
+
+    pub fn lesson(&self) -> &(dyn LessonService + Send + Sync) {
+        &*self.lesson
+    }
+
+    pub fn textbook(&self) -> &(dyn TextbookService + Send + Sync) {
+        &*self.textbook
     }
 }
 
@@ -24,6 +52,9 @@ impl Services {
 pub struct ServiceBuilder {
     db_pool: PgPool,
     lesson_video: Option<Arc<dyn LessonVideoService + Send + Sync>>,
+    lesson: Option<Arc<dyn LessonService + Send + Sync>>,
+    textbook: Option<Arc<dyn TextbookService + Send + Sync>>,
+
 }
 
 impl ServiceBuilder {
@@ -31,6 +62,8 @@ impl ServiceBuilder {
         Self {
             db_pool,
             lesson_video: None,
+            lesson: None,
+            textbook: None
         }
     }
 
@@ -43,19 +76,48 @@ impl ServiceBuilder {
         self
     }
 
+    pub fn with_lesson_service(
+        mut self,
+        service: Arc<dyn LessonService + Send + Sync>,
+    ) -> Self {
+        self.lesson = Some(service);
+        self
+    }
+
+    pub fn with_textbook_service(
+        mut self,
+        service: Arc<dyn TextbookService + Send + Sync>,
+    ) -> Self {
+        self.textbook = Some(service);
+        self
+    }
+
     /// Создать сервисы с настройками по умолчанию
     pub fn build(self) -> Services {
-        // Создаем lesson_video сервис
+        // Создаем сервисы
         let lesson_video = self.lesson_video.unwrap_or_else(|| {
             let repo = PostgresLessonVideoRepository::new(self.db_pool.clone());
             Arc::new(LessonVideoServiceImpl::new(repo))
         });
 
+        let lesson = self.lesson.unwrap_or_else(|| {
+            let repo = PostgresLessonRepository::new(self.db_pool.clone());
+            Arc::new(LessonServiceImpl::new(repo))
+        });
+
+        let textbook = self.textbook.unwrap_or_else(|| {
+            let repo = PostgresTextbookRepository::new(self.db_pool.clone());
+            Arc::new(TextbookServiceImpl::new(repo))
+        });
+
         Services {
             lesson_video,
+            lesson,
+            textbook
         }
     }
 }
+
 
 /// Глобальное состояние приложения
 #[derive(Clone)]

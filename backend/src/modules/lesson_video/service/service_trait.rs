@@ -12,3 +12,7 @@ pub trait LessonVideoService: Send + Sync {
     async fn update_lesson_video(&self, lesson_id: i32, dto: UpdateLessonVideoDto) -> Result<LessonVideoResponseDto, AppError>;
     async fn delete_lesson_video(&self, lesson_id: i32) -> Result<(), AppError>;
 }
+
+
+
+

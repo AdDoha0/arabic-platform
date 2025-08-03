@@ -1,14 +1,23 @@
 use async_trait::async_trait;
-use crate::common::error::AppError;
-use crate::modules::lesson_video::dto::input::{CreateLessonVideoDto, UpdateLessonVideoDto};
-use crate::modules::lesson_video::dto::output::LessonVideoResponseDto;
-use crate::modules::lesson_video::repository::repository_trait::LessonVideoRepository;
+use crate::modules::lessons::{    
+    dto::input::{CreateLessonDto, UpdateLessonDto},
+    dto::output::LessonResponseDto,
+    entity::NewLesson,
+    query::LessonQuery,
+    repository::repository_trait::LessonRepository
+};
 
+use crate::common::{
+    error::AppError,
+    query_params::pagination::HasPagination,
+    response::PaginatedResponse
+};
 
 #[async_trait]
-pub trait LessonVideoService: Send + Sync {
-    async fn get_lesson_video(&self, lesson_id: i32) -> Result<LessonVideoResponseDto, AppError>;
-    async fn create_lesson_video(&self, dto: CreateLessonVideoDto) -> Result<LessonVideoResponseDto, AppError>;
-    async fn update_lesson_video(&self, lesson_id: i32, dto: UpdateLessonVideoDto) -> Result<LessonVideoResponseDto, AppError>;
-    async fn delete_lesson_video(&self, lesson_id: i32) -> Result<(), AppError>;
+pub trait LessonService: Send + Sync {
+    async fn get_lessons(&self, params: &LessonQuery) -> Result<PaginatedResponse<LessonResponseDto>, AppError>;
+    async fn get_lesson_by_id(&self, id: i32) -> Result<LessonResponseDto, AppError>;
+    async fn create_lesson(&self, dto: CreateLessonDto) -> Result<LessonResponseDto, AppError>;
+    async fn update_lesson(&self, id: i32, dto: UpdateLessonDto) -> Result<LessonResponseDto, AppError>;
+    async fn delete_lesson(&self, id: i32) -> Result<(), AppError>;
 }
